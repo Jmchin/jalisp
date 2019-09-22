@@ -27,12 +27,8 @@ void add_history(char* unused) {}
 long eval_op(long x, char* op, long y) {
   if ((strcmp(op, "+") == 0) || strcmp(op, "add") == 0)  { return x + y; }
   if ((strcmp(op, "-") == 0) || strcmp(op, "sub") == 0)  { return x - y; }
-  if ((strcmp(op, "*") == 0) || strcmp(op, "mult") == 0) { return x + y; }
+  if ((strcmp(op, "*") == 0) || strcmp(op, "mult") == 0) { return x * y; }
   if ((strcmp(op, "/") == 0) || strcmp(op, "div") == 0)  { return x / y; }
-  if (strcmp(op, "-") == 0) { return x - y; }
-  if (strcmp(op, "*") == 0) { return x * y; }
-  if (strcmp(op, "/") == 0) { return x / y; }
-
   return 0;
 }
 
@@ -53,6 +49,7 @@ long eval(mpc_ast_t* t) {
   int i = 3;
   while(strstr(t->children[i]->tag, "expr")) {
     x = eval_op(x, op, eval(t->children[i]));
+    i++;
   }
 
   return x;
@@ -94,8 +91,9 @@ int main(int argc, char** argv) {
     /* attempt to parse user input */
     mpc_result_t r;
     if (mpc_parse("<stdin>", input, Lispy, &r)) {
-      /* print the ast */
-      mpc_ast_print(r.output);
+      /* print the result */
+      long result = eval(r.output);
+      printf("%li\n", result);
       mpc_ast_delete(r.output);
     } else {
       /* print the error */
