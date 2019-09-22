@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-/* declare a buffer for user input */
-static char input[2048];
+#include <readline/readline.h>
+#include <readline/history.h>
 
 int main(int argc, char** argv) {
 
@@ -12,10 +13,17 @@ int main(int argc, char** argv) {
 
   while(1) {
 
-    fputs("lispy> ", stdout);
-    fgets(input, 2048, stdin);
-    printf("No you're a %s", input);
+    /* output prompt and get info */
+    char* input = readline("lispy> ");
 
+    /* add input to history */
+    add_history(input);
+
+    /* echo input back to user */
+    printf("No you're a %s\n", input);
+
+    /* free input buffer */
+    free(input);
   }
 
   return 0;
