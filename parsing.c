@@ -24,30 +24,90 @@ void add_history(char* unused) {}
 #include <readline/history.h>
 #endif
 
-long eval_op(long x, char* op, long y) {
-  if ((strcmp(op, "+") == 0) || strcmp(op, "add") == 0)  { return x + y; }
-  if ((strcmp(op, "-") == 0) || strcmp(op, "sub") == 0)  { return x - y; }
-  if ((strcmp(op, "*") == 0) || strcmp(op, "mult") == 0) { return x * y; }
-  if ((strcmp(op, "/") == 0) || strcmp(op, "div") == 0)  { return x / y; }
-  if ((strcmp(op, "%") == 0) || strcmp(op, "mod") == 0)  { return x % y; }
-  if ((strcmp(op, "^") == 0) || strcmp(op, "exp") == 0)  { return pow(x, y); }
-  return 0;
+ /* lisp value  */
+typedef struct {
+  int type;
+  long num;
+  int err;
+} lval;
+
+/* possible lval types */
+enum { LVAL_NUM, LVAL_ERR };
+
+/* possible lval errors */
+enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM };
+
+/* create new number type lval */
+lval lval_num(long x) {
+  lval v;
+  v.type = LVAL_NUM;
+  v.num = x;
+  return v;
 }
 
-long eval(mpc_ast_t* t) {
+/* create new error type lval */
+lval lval_err(int x) {
+  lval v;
+  v.type = LVAL_ERR;
+  v.err = x;
+  return v;
+}
 
-  /* if tagged as number return directly */
+void lval_print(lval v) {
+  switch(v.type) {
+    case LVAL_NUM:
+      printf("%li", v.num);
+      break;
+    case LVAL_ERR:
+      if (v.err == LERR_DIV_ZERO) {
+        printf("Error: Division by zero");
+      }
+      if (v.err == LERR_BAD_OP) {
+        printf("Error: Invalid operator");
+      }
+      if (v.err == LERR_BAD_NUM) {
+        printf("Error: Invalid number");
+      }
+      break;
+  }
+}
+
+void lval_println(lval v) { lval_print(v); putchar('\n'); }
+
+lval eval_op(lval x, char* op, lval y) {
+  /* if error, return it */
+  if (x.type == LVAL_ERR) { return x; }
+  if (y.type == LVAL_ERR) { return y; }
+
+  /* else evaluate */
+  if ((strcmp(op, "+") == 0) || strcmp(op, "add") == 0)  { return lval_num(x.num + y.num); }
+  if ((strcmp(op, "-") == 0) || strcmp(op, "sub") == 0)  { return lval_num(x.num - y.num); }
+  if ((strcmp(op, "*") == 0) || strcmp(op, "mult") == 0) { return lval_num(x.num * y.num); }
+
+  if ((strcmp(op, "/") == 0) || strcmp(op, "div") == 0) {
+    return y.num == 0 ? lval_err(LERR_DIV_ZERO)
+                      : lval_num(x.num / y.num); }
+
+  if ((strcmp(op, "%") == 0) || strcmp(op, "mod") == 0)  { return lval_num(x.num % y.num); }
+  if ((strcmp(op, "^") == 0) || strcmp(op, "exp") == 0)  { return lval_num(pow(x.num, y.num)); }
+
+  /* if no other matches, assume bad operator */
+  return lval_err(LERR_BAD_OP);
+}
+
+lval eval(mpc_ast_t* t) {
   if (strstr(t->tag, "number")) {
-    return atoi(t->contents);
+    /* make sure we can convert */
+    errno = 0;
+    long x = strtol(t->contents, NULL, 10);
+    return errno != ERANGE ? lval_num(x)
+                           : lval_err(LERR_BAD_NUM);
   }
 
-  /* operator is always second child */
   char* op = t->children[1]->contents;
+  lval x = eval(t->children[2]);
 
-  /* store third child in tmp var */
-  long x = eval(t->children[2]);      // notice the recursive call to eval
-
-  /* iterate through rest of children */
+  /* iterate through the rest of children */
   int i = 3;
   while(strstr(t->children[i]->tag, "expr")) {
     x = eval_op(x, op, eval(t->children[i]));
@@ -92,8 +152,8 @@ int main(int argc, char** argv) {
     mpc_result_t r;
     if (mpc_parse("<stdin>", input, Lispy, &r)) {
       /* print the result */
-      long result = eval(r.output);
-      printf("%li\n", result);
+      lval result = eval(r.output);
+      lval_println(result);
       mpc_ast_delete(r.output);
     } else {
       /* print the error */
