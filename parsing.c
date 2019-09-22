@@ -35,11 +35,11 @@ int main(int argc, char** argv) {
 
   /* define parsers with following language */
   mpca_lang(MPCA_LANG_DEFAULT,
-            "                                                    \
-             number   : /-?([0-9]*[.])?[0-9]+/ ;                             \
-             operator : '+' | '-' | '*' | '/' ;                  \
-             expr     : <number> | '(' <operator> <expr>+ ')' ;  \
-             lispy    : /^/ <operator> <expr>+ /$/ ;             \
+            "                                                                            \
+             number   : /-?([0-9]*[.])?[0-9]+/ ;                                         \
+             operator : ('+'|\"add\") | ('-'|\"sub\") | ('*'|\"mult\") | ('/'|\"div\") ; \
+             expr     : <number> | '(' <operator> <expr>+ ')' ;                          \
+             lispy    : /^/ <operator> <expr>+ /$/ ;                                     \
             ",
             Number, Operator, Expr, Lispy);
 
