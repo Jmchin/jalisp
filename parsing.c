@@ -29,6 +29,8 @@ long eval_op(long x, char* op, long y) {
   if ((strcmp(op, "-") == 0) || strcmp(op, "sub") == 0)  { return x - y; }
   if ((strcmp(op, "*") == 0) || strcmp(op, "mult") == 0) { return x * y; }
   if ((strcmp(op, "/") == 0) || strcmp(op, "div") == 0)  { return x / y; }
+  if ((strcmp(op, "%") == 0) || strcmp(op, "mod") == 0)  { return x % y; }
+  if ((strcmp(op, "^") == 0) || strcmp(op, "exp") == 0)  { return pow(x, y); }
   return 0;
 }
 
@@ -63,12 +65,12 @@ int main(int argc, char** argv) {
   mpc_parser_t* Expr = mpc_new("expr");
   mpc_parser_t* Lispy = mpc_new("lispy");
 
-
   /* define parsers with following language */
   mpca_lang(MPCA_LANG_DEFAULT,
             "                                                                            \
              number   : /-?([0-9]*[.])?[0-9]+/ ;                                         \
-             operator : ('+'|\"add\") | ('-'|\"sub\") | ('*'|\"mult\") | ('/'|\"div\") ; \
+             operator : ('+'|\"add\") | ('-'|\"sub\") | ('*'|\"mult\") | ('/'|\"div\")   \
+                        | ('%'| \"mod\") | ('^'|\"exp\") ;                               \
              expr     : <number> | '(' <operator> <expr>+ ')' ;                          \
              lispy    : /^/ <operator> <expr>+ /$/ ;                                     \
             ",
@@ -78,7 +80,6 @@ int main(int argc, char** argv) {
   puts("Lispy version 0.0.0.0.1");
   puts("Press Ctl+c to exit\n");
 
-
   while(1) {
 
     /* output prompt and get info */
@@ -86,7 +87,6 @@ int main(int argc, char** argv) {
 
     /* add input to history */
     add_history(input);
-
 
     /* attempt to parse user input */
     mpc_result_t r;
@@ -109,5 +109,4 @@ int main(int argc, char** argv) {
   mpc_cleanup(4, Number, Operator, Expr, Lispy);
 
   return 0;
-
 }
