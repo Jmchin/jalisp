@@ -255,51 +255,6 @@ lval* builtin_op(lval* a, char* op) {
   return x;
 }
 
-
-
-/* lval eval_op(lval x, char* op, lval y) { */
-/*   /\* if error, return it *\/ */
-/*   if (x.type == LVAL_ERR) { return x; } */
-/*   if (y.type == LVAL_ERR) { return y; } */
-
-/*   /\* else evaluate *\/ */
-/*   if ((strcmp(op, "+") == 0) || strcmp(op, "add") == 0)  { return lval_num(x.num + y.num); } */
-/*   if ((strcmp(op, "-") == 0) || strcmp(op, "sub") == 0)  { return lval_num(x.num - y.num); } */
-/*   if ((strcmp(op, "*") == 0) || strcmp(op, "mult") == 0) { return lval_num(x.num * y.num); } */
-
-/*   if ((strcmp(op, "/") == 0) || strcmp(op, "div") == 0) { */
-/*     return y.num == 0 ? lval_err(LERR_DIV_ZERO) */
-/*                       : lval_num(x.num / y.num); } */
-
-/*   if ((strcmp(op, "%") == 0) || strcmp(op, "mod") == 0)  { return lval_num(x.num % y.num); } */
-/*   if ((strcmp(op, "^") == 0) || strcmp(op, "exp") == 0)  { return lval_num(pow(x.num, y.num)); } */
-
-/*   /\* if no other matches, assume bad operator *\/ */
-/*   return lval_err(LERR_BAD_OP); */
-/* } */
-
-/* lval eval(mpc_ast_t* t) { */
-/*   if (strstr(t->tag, "number")) { */
-/*     /\* make sure we can convert *\/ */
-/*     errno = 0; */
-/*     long x = strtol(t->contents, NULL, 10); */
-/*     return errno != ERANGE ? lval_num(x) */
-/*                            : lval_err(LERR_BAD_NUM); */
-/*   } */
-
-/*   char* op = t->children[1]->contents; */
-/*   lval x = eval(t->children[2]); */
-
-/*   /\* iterate through the rest of children *\/ */
-/*   int i = 3; */
-/*   while(strstr(t->children[i]->tag, "expr")) { */
-/*     x = eval_op(x, op, eval(t->children[i])); */
-/*     i++; */
-/*   } */
-
-/*   return x; */
-/* } */
-
 int main(int argc, char** argv) {
 
   /* create some parsers */
